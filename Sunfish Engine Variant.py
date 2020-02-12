@@ -17,21 +17,27 @@ from collections import namedtuple
 ###############################################################################
 
 # Assigning centipawn values for each chess piece to allow for evaluation by the engine
-# Default piece values taught to children are Pawn(1), Knight(3), Bishop(3), Rook(5), Queen(9), King(Infinite)
+# Default piece values in chess literature are Pawn(1), Knight(3), Bishop(3), Rook(5), Queen(9), King(Infinity)
 # The values must be adjusted to prevent the engine from doing certain trades which are mathematically sound but eschew chess principles:
 # 1. Trading a knight and a bishop for a rook and a pawn
 #  Both pairings are conventionally worth 6 points, but the two minor pieces are better than the rook and pawn at least 95% of the time.
 # 2. Trading three pawns for a minor piece (the minor piece is generally better)
 # 3. Grandmasters typically prefer bishops over knights, and a bishop pair is frequently considered 50 centipawns worth of compensation
 
-piece = { 'P': 100, 'N': 280, 'B': 320, 'R': 479, 'Q': 929, 'K': 60000 }
-
-# Keep pawn at the default value of 100 centipawns (1 point)
+# With the above in mind, we will keep pawns at the default value of 100 centipawns
 # Tune knight up from 300 to 325 centipawns to incentivize the engine not to trade a knight for three pawns
 # Bishop also needs to be stronger than three pawns, and stronger than the knight, so I am going to try 350 centipawns initially
-# Rook 
-# Queen
+# Rook will be bumped up to 525 to make knight and two pawns equivalent to a rook
+# Queen will be bumped up to 1050 to make it similar to three minor pieces and to make two rooks equal to queen and pawn
+# The king's value needs to be higher than the sum of the values of all of the other pieces, 40000 centipawns is arbitrarily large enough
 
+#piece is a dictionary (a collection of mutable, unordered, indexed key-value pairs) of the pieces and their centipawn values
+piece = { 'P': 100, 'N': 325, 'B': 350, 'R': 525, 'Q': 1050, 'K': 40000 }
+
+# Piece-square tables are used to incentivize the engine to place pieces on better squares
+# For example, knights are heavily penalized for being in the corners of the board, where they have only two legal moves
+# However, knights placed in the center of the board or on the 6th rank have eight legal moves and can pivot to either side of the board
+# easily, so we generally want to have knights in the center
 pst = {
     'P': (   0,   0,   0,   0,   0,   0,   0,   0,
             78,  83,  86,  73, 102,  82,  85,  90,
@@ -82,7 +88,7 @@ pst = {
             -4,   3, -14, -50, -57, -18,  13,   4,
             17,  30,  -3, -14,   6,  -1,  40,  18),
 }
-# Pad tables and join piece and pst dictionaries
+# Pad tables and join piece and pst dictionaries (revisit this later)
 for k, table in pst.items():
     padrow = lambda row: (0,) + tuple(x+piece[k] for x in row) + (0,)
     pst[k] = sum((padrow(table[i*8:i*8+8]) for i in range(8)), ())
@@ -121,7 +127,7 @@ directions = {
     'K': (N, E, S, W, N+E, S+E, S+W, N+W)
 }
 
-# Mate value must be greater than 8*queen + 2*(rook+knight+bishop)
+# Mate value must be greater than 9*queen + 2*(rook+knight+bishop)
 # King value is set to twice this value such that if the opponent is
 # 8 queens up, but we got the king, we still exceed MATE_VALUE.
 # When a MATE is detected, we'll set the score to MATE_UPPER - plies to get there
