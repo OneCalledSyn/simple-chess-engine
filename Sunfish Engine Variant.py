@@ -16,9 +16,22 @@ from collections import namedtuple
 # Piece-Square tables. Tune these to change sunfish's behaviour
 ###############################################################################
 
-#Assigning centipawn values for each chess piece to allow for evaluation by the engine
-#Pawns will always be our baseline value of 1 point, or 100 centipawns
+# Assigning centipawn values for each chess piece to allow for evaluation by the engine
+# Default piece values taught to children are Pawn(1), Knight(3), Bishop(3), Rook(5), Queen(9), King(Infinite)
+# The values must be adjusted to prevent the engine from doing certain trades which are mathematically sound but eschew chess principles:
+# 1. Trading a knight and a bishop for a rook and a pawn
+#  Both pairings are conventionally worth 6 points, but the two minor pieces are better than the rook and pawn at least 95% of the time.
+# 2. Trading three pawns for a minor piece (the minor piece is generally better)
+# 3. Grandmasters typically prefer bishops over knights, and a bishop pair is frequently considered 50 centipawns worth of compensation
+
 piece = { 'P': 100, 'N': 280, 'B': 320, 'R': 479, 'Q': 929, 'K': 60000 }
+
+# Keep pawn at the default value of 100 centipawns (1 point)
+# Tune knight up from 300 to 325 centipawns to incentivize the engine not to trade a knight for three pawns
+# Bishop also needs to be stronger than three pawns, and stronger than the knight, so I am going to try 350 centipawns initially
+# Rook 
+# Queen
+
 pst = {
     'P': (   0,   0,   0,   0,   0,   0,   0,   0,
             78,  83,  86,  73, 102,  82,  85,  90,
