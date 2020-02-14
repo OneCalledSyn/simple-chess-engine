@@ -129,7 +129,7 @@ directions = {
 
 # Mate value must be greater than 9*queen + 2*(rook+knight+bishop)
 # King value is set to twice this value such that if the opponent is
-# 8 queens up, but we got the king, we still exceed MATE_VALUE.
+# up the maximum material, but we capture their king, we still exceed MATE_VALUE.
 # When a MATE is detected, we'll set the score to MATE_UPPER - plies to get there
 # E.g. Mate in 3 will be MATE_UPPER - 6
 MATE_LOWER = piece['K'] - 10*piece['Q']
